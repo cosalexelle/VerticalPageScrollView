@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct VerticalPageScrollView<Content:View>: View {
+public struct VerticalPageScrollView<Content:View>: View {
     
     @State private var previousDragAmount: Double = 0.0
     @State private var scrollYOffset: Double = 0.0
@@ -26,7 +26,11 @@ struct VerticalPageScrollView<Content:View>: View {
     
     @ObservedObject private var view_config: VerticalPageScrollViewConfig = VerticalPageScrollViewConfig()
     
-    @ViewBuilder var content: Content
+    @ViewBuilder public var content: Content
+    
+    public init(@ViewBuilder content: () -> Content){
+        self.content = content()
+    }
     
     private func _calculateScrollGeo(withParentGeo parent_geo: GeometryProxy) -> some View {
         GeometryReader { geometry in
@@ -122,29 +126,29 @@ struct VerticalPageScrollView<Content:View>: View {
         }
     }
     
-    func preventOverscroll(_ value: Bool = true) -> Self {
+    public func preventOverscroll(_ value: Bool = true) -> Self {
         self.view_config.boolPreventOverscroll = value
         return self
     }
     
-    enum PageIndicators: Int {
+    public enum PageIndicators: Int {
         case never = 0, automatic = 1, always = 2
     }
-    func showIndicators(_ value: PageIndicators = .automatic) -> Self {
+    public func showIndicators(_ value: PageIndicators = .automatic) -> Self {
         self.view_config.showIndicators = value
         return self
     }
     
-    enum PageSpacing: Double {
+    public enum PageSpacing: Double {
         case none = 0.0, small = 20.0, large = 40.0, overlap = -40
     }
     
-    func pageSpacing(_ value: PageSpacing = .small) -> Self {
+    public func pageSpacing(_ value: PageSpacing = .small) -> Self {
         self.view_config.viewSpacing = value.rawValue;
         return self
     }
     
-    var body: some View {
+    public var body: some View {
         GeometryReader{ parent_geo in
             
             ZStack(alignment: .top){
@@ -203,17 +207,17 @@ struct VerticalPageScrollView<Content:View>: View {
     }
 }
 
-struct VerticalPageScrollView_Previews: PreviewProvider {
-    static var previews: some View {
-        VerticalPageScrollView(){
-            Color.red
-            Color.green
-            Color.blue
-        }
-        .showIndicators()
-        .preventOverscroll()
-        .foregroundColor(.white)
-        .ignoresSafeArea()
-        
-    }
-}
+//public struct VerticalPageScrollView_Previews: PreviewProvider {
+//    public static var previews: some View {
+//        VerticalPageScrollView{
+//            Color.red
+//            Color.green
+//            Color.blue
+//        }
+//        .showIndicators()
+//        .preventOverscroll()
+//        .foregroundColor(.white)
+//        .ignoresSafeArea()
+//        
+//    }
+//}
