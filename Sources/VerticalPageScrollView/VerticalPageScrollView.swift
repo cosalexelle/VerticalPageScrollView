@@ -30,14 +30,6 @@ public struct VerticalPageScrollView<Content:View>: View {
         return self
     }
     
-    public enum PageIndicatorsStyle: Int {
-        case dots = 1, progressbar = 2
-    }
-    public func indicatorsStyle(_ value: PageIndicatorsStyle = .dots) -> Self {
-        view_model.view_config.indicatorsStyle = value
-        return self
-    }
-    
     public enum PageSpacing: Double {
         case none = 0.0, small = 20.0, large = 40.0, overlap = -40
     }
@@ -68,17 +60,8 @@ public struct VerticalPageScrollView<Content:View>: View {
                     .onChanged { value in view_model._drag_onChange(value)}
                     .onEnded{ value in view_model._drag_onEnded(value)})
                 
-                if view_model.view_config.showIndicators != .never && view_model.intPageCount > 1{
-                    
-                    if view_model.view_config.indicatorsStyle == .dots {
-                        
-                        DotsIndicators(view_model)
-                        
-                    } else if view_model.view_config.indicatorsStyle == .progressbar {
-                        
-                        ProgressViewIndicators(view_model)
-                        
-                    }
+                DrawAfterDelayView(delay: 0.5, animation: .easeInOut(duration: 0.5)){
+                    ProgressViewIndicators(view_model)
                 }
                 
             }
@@ -98,7 +81,6 @@ public struct VerticalPageScrollView_Previews: PreviewProvider {
         .showIndicators()
 //        .preventOverscroll()
 //        .pageSpacing(.overlap)
-        .indicatorsStyle(.progressbar)
         .foregroundColor(.white)
         .ignoresSafeArea()
         
@@ -109,7 +91,6 @@ private extension VerticalPageScrollView{
     private class VerticalPageScrollViewConfig: ObservableObject {
         @Published var boolPreventOverscroll: Bool = false
         @Published var showIndicators: PageIndicators = .never
-        @Published var indicatorsStyle: PageIndicatorsStyle = .dots
         @Published var viewSpacing: Double = 20.0
     }
 }
@@ -123,8 +104,10 @@ private extension VerticalPageScrollView {
         var scrollGeo: CGRect = CGRect(x: 0.0, y: 0.0, width: 0.0, height: 0.0)
         var parentGeo: CGRect = CGRect(x: 0.0, y: 0.0, width: 0.0, height: 0.0)
         
-        var intSelected: Int = 0
-        var intPageCount: Int = 0
+        @Published var intSelected: Int = 0
+        var intPageCount: Int {
+            scroll_height > 0 ? Int( scroll_height / page_height ) : 1
+        }
         
         var view_config: VerticalPageScrollViewConfig = VerticalPageScrollViewConfig()
         
@@ -172,20 +155,16 @@ private extension VerticalPageScrollView {
                 
                 // dont run this if the view is being scrolled
                 
+                print("bg main", self.intPageCount)
+                
                 if !self.boolIsScrolling {
                     let scrollRect = geometry.frame(in: .global)
                     
-                    DispatchQueue.main.async {
-                        withAnimation(.easeInOut){
-                            self.scrollGeo = scrollRect
-                            self.parentGeo = parent_geo.frame(in: .global)
-
-                            self.intPageCount = Int(self.scroll_height / self.page_height)
-
-                        }
+                    withAnimation(.easeInOut){
+                        self.scrollGeo = scrollRect
+                        self.parentGeo = parent_geo.frame(in: .global)
                     }
                 }
-                
                 
                 return Color.clear
             }
@@ -219,44 +198,6 @@ private extension VerticalPageScrollView {
             }
         }
         
-    }
-    
-}
-
-private extension VerticalPageScrollView {
-    
-    private struct DotsIndicators: View {
-        
-        @ObservedObject private var view_model: VerticalPageScrollViewModel
-        
-        init(_ view_model: VerticalPageScrollViewModel){
-            self.view_model = view_model
-        }
-        
-        var body: some View{
-            VStack {
-                VStack(spacing: 0.0) {
-                    ForEach(0..<view_model.intPageCount, id: \.self){ i in
-                        
-                        Button(action: {
-                            view_model.updateSelected_fromDotsIndicator(index: i)
-                        }){
-                            Image(systemName: "circle.fill")
-                                .scaleEffect(view_model.intSelected == i ? 0.7 : 0.4)
-                                .opacity(view_model.intSelected == i ? 0.7 : 0.4)
-                                .font(.caption.weight(.bold))
-                                .foregroundColor(.white)
-                                .padding(.vertical, 8)
-                                .padding(.horizontal, 8)
-                        }
-                    }
-                }
-                .padding(.vertical, 8)
-                .background(.ultraThinMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-                .padding(.trailing, 8)
-            }.frame(width: view_model.parentGeo.width, height: view_model.parentGeo.height, alignment: .trailing)
-        }
     }
     
 }
