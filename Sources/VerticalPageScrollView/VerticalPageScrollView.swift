@@ -76,7 +76,7 @@ public struct VerticalPageScrollView<Content:View>: View {
                         
                     } else if view_model.view_config.indicatorsStyle == .progressbar {
                         
-                        
+                        ProgressViewIndicators(view_model)
                         
                     }
                 }
@@ -98,7 +98,7 @@ public struct VerticalPageScrollView_Previews: PreviewProvider {
         .showIndicators()
 //        .preventOverscroll()
 //        .pageSpacing(.overlap)
-//        .indicatorsStyle(.progressbar)
+        .indicatorsStyle(.progressbar)
         .foregroundColor(.white)
         .ignoresSafeArea()
         
@@ -146,6 +146,10 @@ private extension VerticalPageScrollView {
         
         var nearestView_top: Double {
             round(-scrollYOffset / page_height) * page_height
+        }
+        
+        var scrollProgress: Double {
+            -scrollYOffset / scroll_height
         }
         
         public func updateSelected_fromDotsIndicator(index i: Int){
@@ -251,6 +255,39 @@ private extension VerticalPageScrollView {
                 .background(.ultraThinMaterial)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
                 .padding(.trailing, 8)
+            }.frame(width: view_model.parentGeo.width, height: view_model.parentGeo.height, alignment: .trailing)
+        }
+    }
+    
+}
+
+private extension VerticalPageScrollView {
+    
+    private struct ProgressViewIndicators: View {
+        
+        @ObservedObject private var view_model: VerticalPageScrollViewModel
+        
+        private var progressBar_height: Double = 300
+        private var progressBar_width: Double = 20
+        
+        init(_ view_model: VerticalPageScrollViewModel){
+            self.view_model = view_model
+        }
+        
+        var body: some View{
+            VStack {
+                VStack(spacing: 0.0) {
+                    RoundedRectangle(cornerRadius: 16)
+                        .opacity(0.7)
+                        .frame(height: progressBar_height / CGFloat(view_model.intPageCount))
+                        .offset(y: view_model.scrollProgress * progressBar_height)
+                    Spacer()
+                }
+                .frame(width: progressBar_width, height: progressBar_height)
+                .background(.ultraThinMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .padding(.trailing, 8)
+                
             }.frame(width: view_model.parentGeo.width, height: view_model.parentGeo.height, alignment: .trailing)
         }
     }
