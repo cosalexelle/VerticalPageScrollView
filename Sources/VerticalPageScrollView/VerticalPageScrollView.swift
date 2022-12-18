@@ -267,8 +267,10 @@ private extension VerticalPageScrollView {
         
         @ObservedObject private var view_model: VerticalPageScrollViewModel
         
-        private var progressBar_height: Double = 300
-        private var progressBar_width: Double = 20
+        @State private var progressBar_height: Double = 300
+        @State private var progressBar_width: Double = 16
+        @State private var progressBar_padding_trailing: Double = 8
+        @State private var progressBar_btn_opacity: Double = 0.4
         
         @State var previousDragAmount: Double = 0.0
         
@@ -284,7 +286,7 @@ private extension VerticalPageScrollView {
             VStack {
                 VStack(spacing: 0.0) {
                     RoundedRectangle(cornerRadius: 16)
-                        .opacity(0.7)
+                        .opacity(progressBar_btn_opacity)
                         .frame(height: progressBar_height / CGFloat(view_model.intPageCount))
                         .offset(y: progressBar_offset)
                     Spacer()
@@ -292,7 +294,7 @@ private extension VerticalPageScrollView {
                 .frame(width: progressBar_width, height: progressBar_height)
                 .background(.ultraThinMaterial)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
-                .padding(.trailing, 8)
+                .padding(.trailing, progressBar_padding_trailing)
                 .onTapGesture { value in
                     withAnimation(.easeInOut(duration: 0.4)){
                         
@@ -307,8 +309,23 @@ private extension VerticalPageScrollView {
                         view_model.intSelected = Int(abs(view_model.scrollYOffset) / view_model.page_height)
                     }
                 }
-                .gesture(DragGesture()
-                    .onChanged{ value in
+                .simultaneousGesture(DragGesture(minimumDistance: 0)
+                    .onChanged { _ in
+                        withAnimation(.interpolatingSpring(mass: 0.1, stiffness: 30, damping: 1.4, initialVelocity: 5)) {
+                            progressBar_width = 24
+                            progressBar_height = 320
+                            progressBar_btn_opacity = 0.7
+                        }
+                    }
+                    .onEnded{ _ in
+                        withAnimation(.interpolatingSpring(mass: 0.1, stiffness: 30, damping: 1.4, initialVelocity: 5)) {
+                            progressBar_width = 16
+                            progressBar_height = 300
+                            progressBar_btn_opacity = 0.4
+                        }
+                    })
+                .simultaneousGesture(DragGesture()
+                    .onChanged { value in
                         withAnimation(.easeInOut(duration: 0.4)){
                             let delta = -(value.translation.height - previousDragAmount) / progressBar_height * view_model.scroll_height
                             if (view_model.scrollYOffset + delta < 0 &&
@@ -318,7 +335,7 @@ private extension VerticalPageScrollView {
                             previousDragAmount = value.translation.height
                         }
                     }
-                    .onEnded{ value in
+                    .onEnded { value in
                         withAnimation(.easeInOut(duration: 0.4)){
                             previousDragAmount = 0.0
                             let nextView_top = view_model.nearestView_top
