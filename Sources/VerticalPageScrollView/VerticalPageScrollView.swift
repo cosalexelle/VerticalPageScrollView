@@ -118,15 +118,15 @@ private extension VerticalPageScrollView {
     
     private class VerticalPageScrollViewModel: ObservableObject {
         
-        @Published var previousDragAmount: Double = 0.0
+        var previousDragAmount: Double = 0.0
         @Published var scrollYOffset: Double = 0.0
-        @Published var scrollGeo: CGRect = CGRect(x: 0.0, y: 0.0, width: 0.0, height: 0.0)
-        @Published var parentGeo: CGRect = CGRect(x: 0.0, y: 0.0, width: 0.0, height: 0.0)
+        var scrollGeo: CGRect = CGRect(x: 0.0, y: 0.0, width: 0.0, height: 0.0)
+        var parentGeo: CGRect = CGRect(x: 0.0, y: 0.0, width: 0.0, height: 0.0)
         
-        @Published var intSelected: Int = 0
-        @Published var intPageCount: Int = 0
+        var intSelected: Int = 0
+        var intPageCount: Int = 0
         
-        @Published var view_config: VerticalPageScrollViewConfig = VerticalPageScrollViewConfig()
+        var view_config: VerticalPageScrollViewConfig = VerticalPageScrollViewConfig()
         
         var page_height: Double {
             parentGeo.height + view_config.viewSpacing
@@ -286,13 +286,14 @@ private extension VerticalPageScrollView {
             VStack {
                 VStack(spacing: 0.0) {
                     RoundedRectangle(cornerRadius: 16)
+//                        .fill(.ultraThinMaterial)
                         .opacity(progressBar_btn_opacity)
                         .frame(height: progressBar_height / CGFloat(view_model.intPageCount))
                         .offset(y: progressBar_offset)
                     Spacer()
                 }
                 .frame(width: progressBar_width, height: progressBar_height)
-                .background(.ultraThinMaterial)
+                .background(.white.opacity(0.2))
                 .clipShape(RoundedRectangle(cornerRadius: 16))
                 .padding(.trailing, progressBar_padding_trailing)
                 .onTapGesture { value in
