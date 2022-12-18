@@ -60,9 +60,8 @@ public struct VerticalPageScrollView<Content:View>: View {
                     .onChanged { value in view_model._drag_onChange(value)}
                     .onEnded{ value in view_model._drag_onEnded(value)})
                 
-                DrawAfterDelayView(delay: 0.5, animation: .easeInOut(duration: 0.5)){
-                    ProgressViewIndicators(view_model)
-                }
+                ProgressViewIndicators(view_model)
+                    .drawAfter(delay: 0.5)
                 
             }
             .background(.black)
@@ -79,8 +78,6 @@ public struct VerticalPageScrollView_Previews: PreviewProvider {
             Color.blue
         }
         .showIndicators()
-//        .preventOverscroll()
-//        .pageSpacing(.overlap)
         .foregroundColor(.white)
         .ignoresSafeArea()
         
@@ -134,16 +131,7 @@ private extension VerticalPageScrollView {
         var scrollProgress: Double {
             -scrollYOffset / scroll_height
         }
-        
-        public func updateSelected_fromDotsIndicator(index i: Int){
-            let distance_to_item = abs( i - intSelected )
-            withAnimation(.easeInOut(duration: distance_to_item >= 6 ? 1.5 : distance_to_item >= 3 ? 1.0 : 0.4)){
-                let nextView_top = Double(i) * page_height
-                scrollYOffset = -nextView_top
-                intSelected = Int(abs(scrollYOffset) / page_height)
-            }
-        }
-        
+                
         public func _calculateScrollGeo(withParentGeo parent_geo: GeometryProxy) -> some View {
             GeometryReader { geometry in
                 
