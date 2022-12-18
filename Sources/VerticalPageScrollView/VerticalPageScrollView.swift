@@ -270,6 +270,12 @@ private extension VerticalPageScrollView {
         private var progressBar_height: Double = 300
         private var progressBar_width: Double = 20
         
+        @State var previousDragAmount: Double = 0.0
+        
+        private var progressBar_offset: Double {
+            view_model.scrollProgress * progressBar_height
+        }
+        
         init(_ view_model: VerticalPageScrollViewModel){
             self.view_model = view_model
         }
@@ -280,13 +286,48 @@ private extension VerticalPageScrollView {
                     RoundedRectangle(cornerRadius: 16)
                         .opacity(0.7)
                         .frame(height: progressBar_height / CGFloat(view_model.intPageCount))
-                        .offset(y: view_model.scrollProgress * progressBar_height)
+                        .offset(y: progressBar_offset)
                     Spacer()
                 }
                 .frame(width: progressBar_width, height: progressBar_height)
                 .background(.ultraThinMaterial)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
                 .padding(.trailing, 8)
+                .onTapGesture { value in
+                    withAnimation(.easeInOut(duration: 0.4)){
+                        
+                        let tap_offset = (progressBar_height / Double(view_model.intPageCount)) * 0.5
+                        
+                        var nextView_top = ( ( value.y - tap_offset) / progressBar_height ) * view_model.scroll_height
+                        
+                        nextView_top = round(nextView_top / view_model.page_height) * view_model.page_height
+                        
+                        view_model.scrollYOffset = nextView_top < view_model.scroll_height && nextView_top >= 0 ? -nextView_top : -view_model.currentView_top
+                        
+                        view_model.intSelected = Int(abs(view_model.scrollYOffset) / view_model.page_height)
+                    }
+                }
+                .gesture(DragGesture()
+                    .onChanged{ value in
+                        withAnimation(.easeInOut(duration: 0.4)){
+                            let delta = -(value.translation.height - previousDragAmount) / progressBar_height * view_model.scroll_height
+                            if (view_model.scrollYOffset + delta < 0 &&
+                                 view_model.scrollYOffset + delta > -view_model.scroll_height + view_model.page_height) {
+                                view_model.scrollYOffset = view_model.scrollYOffset + delta
+                            }
+                            previousDragAmount = value.translation.height
+                        }
+                    }
+                    .onEnded{ value in
+                        withAnimation(.easeInOut(duration: 0.4)){
+                            previousDragAmount = 0.0
+                            let nextView_top = view_model.nearestView_top
+                            
+                            view_model.scrollYOffset = nextView_top < view_model.scroll_height && nextView_top >= 0 ? -nextView_top : -view_model.currentView_top
+                            
+                            view_model.intSelected = Int(abs(view_model.scrollYOffset) / view_model.page_height)
+                        }
+                    })
                 
             }.frame(width: view_model.parentGeo.width, height: view_model.parentGeo.height, alignment: .trailing)
         }
