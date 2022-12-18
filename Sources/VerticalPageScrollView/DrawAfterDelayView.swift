@@ -15,7 +15,7 @@ struct DrawAfterDelayView<Content:View>: View {
     
     @ViewBuilder var content: Content
     
-    @State var boolIsHidden: Bool = true
+    @State private var boolIsHidden: Bool = true
     
     var body: some View {
         Group {

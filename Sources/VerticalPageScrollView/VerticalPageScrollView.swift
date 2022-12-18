@@ -155,8 +155,6 @@ private extension VerticalPageScrollView {
                 
                 // dont run this if the view is being scrolled
                 
-                print("bg main", self.intPageCount)
-                
                 if !self.boolIsScrolling {
                     let scrollRect = geometry.frame(in: .global)
                     
